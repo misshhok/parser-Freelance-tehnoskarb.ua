@@ -11,6 +11,17 @@ HEADERS = {
     }
 HOST = 'https://tehnoskarb.ua' # инициализация конгстант URL HEADERS и HOST
 
+urls = {
+    'Smartphones': 'https://tehnoskarb.ua/telefony-smartfony-aksessuary/c66/filter/new=1',
+    'Instruments': 'https://tehnoskarb.ua/instrumenty-i-oborudovanie/c49/filter/new=1',
+    'TV/Photo': 'https://tehnoskarb.ua/televizory-foto-audio-video/c2/filter/new=1',
+    'Notebooks': 'https://tehnoskarb.ua/noutbuki-planshety-kompjutery/c33/filter/new=1',
+    'Appliances': 'https://tehnoskarb.ua/bytovaja-tekhnika/c141/filter/new=1',
+    'Clocks': 'https://tehnoskarb.ua/chasy-naruchnye/c39/filter/new=1',
+    'Sport': 'https://tehnoskarb.ua/sport-i-otdykh/c122/filter/new=1',
+    'House': 'https://tehnoskarb.ua/dom-sad-i-remont/c761/filter/new=1',
+    'Auto' : 'https://tehnoskarb.ua/avtotovary/c112/filter/new=1'
+}
 
  # -----------------------------------------------------
 conn = sqlite3.connect('techno-scrab.db') # создание и подключение базы данных SQLite3
@@ -28,7 +39,39 @@ conn.commit()
 
 
 def main():  # извлечение небходимой информации из html-кода 
-    r = requests.get(URL, headers=HEADERS, params='')
+    print('Выберите категроию - ')
+    print('Доступные категории:')
+    print('Smartphones - 1 \n' 
+    'Instruments - 2 \n'
+    'TV/Photo - 3 \n'
+    'Notebooks - 4 \n'
+    'Appliances - 5 \n'
+    'Clocks - 6 \n'
+    'Sport - 7 \n'
+    'House - 8 \n'
+    'Auto - 9 \n')
+    category = int(input())
+    if category == 1:
+        url = urls['Smartphones']
+    elif category == 2:
+            url = urls['Instruments']
+    elif category == 3:
+            url = urls['TV/Photo']
+    elif category == 4:
+            url = urls['Notebooks']
+    elif category == 5:
+            url = urls['Appliances']
+    elif category == 6:
+            url = urls['Clocks']
+    elif category == 7:
+            url = urls['Sport']
+    elif category == 8:
+            url = urls['House']
+    elif category == 9:
+            url = urls['Auto']
+    else:
+        print('none')
+    r = requests.get(url, headers=HEADERS, params='')
 
     soup = BeautifulSoup(r.text, 'html.parser')
     pages = soup.find_all('div', class_ = 'tc-el-pagination c-pagination tc-is-background')
@@ -70,7 +113,13 @@ def main():  # извлечение небходимой информации и
                 else:
                     itemPRICE = int(itemPRICE[0])
             else:
-                itemPRICE = None
+                itemPRICERR = item.find('div', class_ = 'c-model-content d-f fl-d-c').find('div', class_ = 'c-model-price text-truncate c-model-price--sale')
+                itemPRICE = itemPRICERR.get_text().replace(' ', '')[:-3].split('-')
+                if len(itemPRICE) == 2:
+                    del itemPRICE[1]
+                    itemPRICE = int(itemPRICE[0])
+                else:
+                    itemPRICE = int(itemPRICE[0])
             # Создание кортежа для последущей передачи в БД
             # так-как sqlite3 при передаче VALUES требует кортеж
             el = (
