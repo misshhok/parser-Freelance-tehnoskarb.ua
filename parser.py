@@ -12,6 +12,7 @@ HEADERS = {
 HOST = 'https://tehnoskarb.ua' # инициализация конгстант URL HEADERS и HOST
 
 urls = {
+    'ALL': 'https://tehnoskarb.ua/katalog-komissionnojj-tekhniki/c-all/filter/new=1',
     'Smartphones': 'https://tehnoskarb.ua/telefony-smartfony-aksessuary/c66/filter/new=1',
     'Instruments': 'https://tehnoskarb.ua/instrumenty-i-oborudovanie/c49/filter/new=1',
     'TV/Photo': 'https://tehnoskarb.ua/televizory-foto-audio-video/c2/filter/new=1',
@@ -49,7 +50,8 @@ def main():  # извлечение небходимой информации и
     'Clocks - 6 \n'
     'Sport - 7 \n'
     'House - 8 \n'
-    'Auto - 9 \n')
+    'Auto - 9 \n'
+    'ALL - 10 \n')
     category = int(input())
     if category == 1:
         url = urls['Smartphones']
@@ -69,6 +71,8 @@ def main():  # извлечение небходимой информации и
             url = urls['House']
     elif category == 9:
             url = urls['Auto']
+    elif category == 10:
+            url = urls['ALL']
     else:
         print('none')
     r = requests.get(url, headers=HEADERS, params='')
@@ -80,7 +84,7 @@ def main():  # извлечение небходимой информации и
         number = int(page.find_all('li')[-1].get_text()) # пагинация
     
     
-    number = int(number / 2)
+    # number = int(number / 2)
     i = 1
     count = 0
     for i in range(number, 0, -1):
