@@ -25,22 +25,22 @@ productPRICE INTEGER);
 conn.commit()
 # -------------------------------------------------------
 
-def get_html(url, params=''): # функция для получения html кода страницы передаваемой через парметр url
-    r = requests.get(url, headers=HEADERS, params=params)
-    return r
 
-def main(html):  # извлечение небходимой информации из html-кода 
-    soup = BeautifulSoup(html, 'html.parser')
+
+def main():  # извлечение небходимой информации из html-кода 
+    r = requests.get(URL, headers=HEADERS, params='')
+
+    soup = BeautifulSoup(r.text, 'html.parser')
     pages = soup.find_all('div', class_ = 'tc-el-pagination c-pagination tc-is-background')
 
     for page in pages:
         number = int(page.find_all('li')[-1].get_text()) # пагинация
     
     
-
+    number = int(number / 2)
     i = 1
-
-    while i <= number:
+    count = 0
+    for i in range(number, 0, -1):
         url = 'https://tehnoskarb.ua/katalog-komissionnojj-tekhniki/c-all/filter/new=1?page={}' # после того как получили url страницы из пагинации посылаем get-запрос для получения html-кода
         r = requests.get(url.format(i), headers=HEADERS, params='')
         
@@ -79,8 +79,16 @@ def main(html):  # извлечение небходимой информаци�
                 itemURL,
                 itemPRICE
             )
-            cur.execute("INSERT INTO products VALUES (?, ?, ?, ?);", (el))
-            conn.commit()
+            info = cur.execute('SELECT * FROM products WHERE ID=? OR productNAME=? AND productURL=? AND productPRICE=? ', (el))
+            if info.fetchone() is None: 
+                cur.execute("INSERT INTO products VALUES (?, ?, ?, ?);", (el))
+                conn.commit()
+                print("запись добавлена в таблицу")
+                count +=1
+            else:
+                print("запись есть в таблице")
+    print(f'{count} - добавлено в таблицу')
+            
             # выполнение SQL-запроса
 
     #         print('запись добавлена')
@@ -90,5 +98,4 @@ def main(html):  # извлечение небходимой информаци�
     
     
 if __name__ == '__main__':
-    html = get_html(URL)
-    result = main(html.text)
+    main()
