@@ -1,4 +1,4 @@
-import sqlite3
+import json
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher.filters import Text
 from aiogram.utils.markdown import hbold, hlink
@@ -6,71 +6,194 @@ from parser import main
 import os
 import asyncio
 
-bot = Bot(token='5070639816:AAG1YkTnFe0t161-CisoRyMN1kEt7GQ7nWs', parse_mode=types.ParseMode.HTML)
+bot = Bot(token='', parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
 
 
 
 @dp.message_handler(commands='start')
 async def start(message: types.Message):
-    start_buttons = ['Проверить обновления товаров', 'Фильтры']
+    start_buttons = [
+    'Смартфоны и Аксессуары', 
+    'Инструменты',
+    'TV/Фото',
+    'Ноутбуки и Компьютеры',
+    'Бытовая техника',
+    'Часы',
+    'Спорт',
+    'Для дома',
+    ]
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(*start_buttons)
     
-    await message.answer('Выберите действие', reply_markup=keyboard)
+    await message.answer('Выберите категорию', reply_markup=keyboard)
     
 
-@dp.message_handler(Text(equals='Проверить обновления товаров'))
-async def get_discount_knives(message: types.Message):
+@dp.message_handler(Text(equals='Смартфоны и Аксессуары'))
+async def get_smart(message: types.Message):
     await message.answer('Please waiting...')
     
-    main()
-    conn = sqlite3.connect('techno-scrab.db')
-    cur = conn.cursor()
-
-    products = cur.execute('SELECT * FROM products ORDER BY productPRICE')
+    main(1)
     
-    for index,item in enumerate(products):
-        card = f'{hlink(item[2])}\n' \
-            f'{hbold("Название: ")}{item[1]}%\n' \
-            f'{hbold("Цена: ")}${item[3]}🔥'
+    with open('result.json') as file:
+        data = json.load(file)
+    
         
-    # for index, item in enumerate():
-    #     card = f'{hlink(item.get("full_name"), item.get("3d"))}\n' \
-    #         f'{hbold("Скидка: ")}{item.get("overprice")}%\n' \
-    #         f'{hbold("Цена: ")}${item.get("item_price")}🔥'
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
     
     
         if index%5 == 0:
             asyncio.sleep(1)
-        if index%20 == 0:
-            break 
+            
         await message.answer(card)
         
+@dp.message_handler(Text(equals='Инструменты'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(2)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
         
-# @dp.message_handler(Text(equals=''))
-# async def get_discount_guns(message: types.Message):
-#     await message.answer('Please waiting...')
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
     
     
-    
-    
-        
-#     for index, item in enumerate(data):
-#         card = f'{hlink(item.get("full_name"), item.get("3d"))}\n' \
-#             f'{hbold("Скидка: ")}{item.get("overprice")}%\n' \
-#             f'{hbold("Цена: ")}${item.get("item_price")}🔥'
-    
-    
-#         if index%5 == 0:
-#             asyncio.sleep(1)
+        if index%5 == 0:
+            asyncio.sleep(1)
             
-#         await message.answer(card)
+        await message.answer(card)
+    
+@dp.message_handler(Text(equals='TV/Фото'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(3)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
+
+@dp.message_handler(Text(equals='Ноутбуки и Компьютеры'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(4)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
+
+@dp.message_handler(Text(equals='Бытовая техника'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(5)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
+
+
+@dp.message_handler(Text(equals='Часы'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(6)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
+
+@dp.message_handler(Text(equals='Спорт'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(7)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
+
+@dp.message_handler(Text(equals='Для дома'))
+async def get_smart(message: types.Message):
+    await message.answer('Please waiting...')
+    
+    main(8)
+    
+    with open('result.json') as file:
+        data = json.load(file)
+    
+        
+    for index, item in enumerate(data):
+        card = f'{hlink(item.get("url"), item.get("name"))}\n' \
+            f'{hbold("Цена: ")}{item.get("price")} грн🔥'
+    
+    
+        if index%5 == 0:
+            asyncio.sleep(1)
+            
+        await message.answer(card)
 
     
-def main():
+def start():
     executor.start_polling(dp)
     
     
 if __name__ == '__main__':
-    main()
+    start()

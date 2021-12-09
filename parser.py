@@ -1,6 +1,7 @@
-from bs4 import BeautifulSoup, element
 import requests
-import sqlite3   # импорты необходимых бибилиотек
+from bs4 import BeautifulSoup, element
+
+import json  # импорты необходимых бибилиотек
 
 
 
@@ -11,8 +12,8 @@ HEADERS = {
     }
 HOST = 'https://tehnoskarb.ua' # инициализация конгстант URL HEADERS и HOST
 
+
 urls = {
-    'ALL': 'https://tehnoskarb.ua/katalog-komissionnojj-tekhniki/c-all/filter/new=1',
     'Smartphones': 'https://tehnoskarb.ua/telefony-smartfony-aksessuary/c66/filter/new=1',
     'Instruments': 'https://tehnoskarb.ua/instrumenty-i-oborudovanie/c49/filter/new=1',
     'TV/Photo': 'https://tehnoskarb.ua/televizory-foto-audio-video/c2/filter/new=1',
@@ -21,38 +22,39 @@ urls = {
     'Clocks': 'https://tehnoskarb.ua/chasy-naruchnye/c39/filter/new=1',
     'Sport': 'https://tehnoskarb.ua/sport-i-otdykh/c122/filter/new=1',
     'House': 'https://tehnoskarb.ua/dom-sad-i-remont/c761/filter/new=1',
-    'Auto' : 'https://tehnoskarb.ua/avtotovary/c112/filter/new=1'
+    'Auto' : 'https://tehnoskarb.ua/avtotovary/c112/filter/new=1',
 }
-
  # -----------------------------------------------------
-conn = sqlite3.connect('techno-scrab.db') # создание и подключение базы данных SQLite3
-cur = conn.cursor()
-                          # создание таблцы
-cur.execute("""CREATE TABLE IF NOT EXISTS products(
-ID INTEGER PRIMARY KEY AUTOINCREMENT,
-productNAME TEXT,                                           
-productURl TEXT,
-productPRICE INTEGER);
-""")                      # создание полей таблцы
-conn.commit()
+# conn = sqlite3.connect('techno-scrab.db') # создание и подключение базы данных SQLite3
+# cur = conn.cursor()
+#                           # создание таблцы
+# cur.execute("""CREATE TABLE IF NOT EXISTS products(
+# ID INTEGER PRIMARY KEY AUTOINCREMENT,
+# productNAME TEXT,                                           
+# productURl TEXT,
+# productPRICE INTEGER);
+# """)                      # создание полей таблцы
+# conn.commit()
 # -------------------------------------------------------
 
 
 
-def main():  # извлечение небходимой информации из html-кода 
-    print('Выберите категроию - ')
-    print('Доступные категории:')
-    print('Smartphones - 1 \n' 
-    'Instruments - 2 \n'
-    'TV/Photo - 3 \n'
-    'Notebooks - 4 \n'
-    'Appliances - 5 \n'
-    'Clocks - 6 \n'
-    'Sport - 7 \n'
-    'House - 8 \n'
-    'Auto - 9 \n'
-    'ALL - 10 \n')
-    category = int(input())
+def main(category):  # извлечение небходимой информации из html-кода 
+
+
+
+    # print('Выберите категроию - ')
+    # print('Доступные категории:')
+    # print('Smartphones - 1 \n' 
+    # 'Instruments - 2 \n'
+    # 'TV/Photo - 3 \n'
+    # 'Notebooks - 4 \n'
+    # 'Appliances - 5 \n'
+    # 'Clocks - 6 \n'
+    # 'Sport - 7 \n'
+    # 'House - 8 \n'
+    # 'Auto - 9 \n')
+    # category = int(input())
     if category == 1:
         url = urls['Smartphones']
     elif category == 2:
@@ -71,10 +73,9 @@ def main():  # извлечение небходимой информации и
             url = urls['House']
     elif category == 9:
             url = urls['Auto']
-    elif category == 10:
-            url = urls['ALL']
     else:
         print('none')
+
     r = requests.get(url, headers=HEADERS, params='')
 
     soup = BeautifulSoup(r.text, 'html.parser')
@@ -82,18 +83,21 @@ def main():  # извлечение небходимой информации и
 
     for page in pages:
         number = int(page.find_all('li')[-1].get_text()) # пагинация
-    
+        
+    elements = []
+    id = 0
     
     # number = int(number / 2)
     i = 1
     count = 0
     for i in range(number, 0, -1):
-        url = 'https://tehnoskarb.ua/katalog-komissionnojj-tekhniki/c-all/filter/new=1?page={}' # после того как получили url страницы из пагинации посылаем get-запрос для получения html-кода
-        r = requests.get(url.format(i), headers=HEADERS, params='')
+        u = f'{url}?page={i}' # после того как получили url страницы из пагинации посылаем get-запрос для получения html-кода
+        r = requests.get(u, headers=HEADERS, params='')
         
         soup = BeautifulSoup(r.text, 'html.parser')
         items = soup.find_all('div', class_ = 'c-model__item')  # получение карточек товаров
         
+        count += len(items)
         for item in items:
 
             # получение из карточки 
@@ -124,23 +128,30 @@ def main():  # извлечение небходимой информации и
                     itemPRICE = int(itemPRICE[0])
                 else:
                     itemPRICE = int(itemPRICE[0])
+            id +=1 
             # Создание кортежа для последущей передачи в БД
             # так-как sqlite3 при передаче VALUES требует кортеж
-            el = (
-                None,
-                itemNAME,
-                itemURL,
-                itemPRICE
-            )
-            info = cur.execute('SELECT * FROM products WHERE ID=? OR productNAME=? AND productURL=? AND productPRICE=? ', (el))
-            if info.fetchone() is None: 
-                cur.execute("INSERT INTO products VALUES (?, ?, ?, ?);", (el))
-                conn.commit()
-                print("запись добавлена в таблицу")
-                count +=1
-            else:
-                print("запись есть в таблице")
-    print(f'{count} - добавлено в таблицу')
+            
+            el = {
+                'id':id,
+                'name':itemNAME,
+                'url':itemURL,
+                'price':itemPRICE
+            }
+            elements.append(el)
+    with open('result.json', 'w') as file:
+        json.dump( elements,file, indent=4, ensure_ascii=False)
+            
+    #         info = cur.execute('SELECT * FROM products WHERE ID=? OR productNAME=? AND productURL=? AND productPRICE=? ', (el))
+    #         if info.fetchone() is None: 
+    #             cur.execute("INSERT INTO products VALUES (?, ?, ?, ?);", (el))
+    #             conn.commit()
+    #             print("запись добавлена в таблицу")
+    #             count +=1
+
+    #         else:
+    #             print("запись есть в таблице")
+    # print(f'{count} - добавлено в таблицу')
             
             # выполнение SQL-запроса
 
@@ -152,3 +163,5 @@ def main():  # извлечение небходимой информации и
     
 if __name__ == '__main__':
     main()
+
+
